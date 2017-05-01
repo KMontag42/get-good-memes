@@ -29,6 +29,13 @@ var event_count = 0;
 const incrementEventCount = msg => {
     event_count++;
     // do logic for encounter here
+    if (event_count % 5 === 0) {
+        event_count = 0;
+        msg.say({
+            channel: 'development',
+            text: 'ENCOUNTER'
+        });
+    }
 }
 //*********************************************
 // Setup different handlers for messages
@@ -43,7 +50,7 @@ slapp.message('help', ['mention', 'direct_message'], msg => {
 slapp.message('event_count', ['direct_message'], msg => {
     msg.say(`${event_count}`);
     incrementEventCount(msg);
-})
+});
 
 // demonstrate returning an attachment...
 slapp.message('attachment', ['mention', 'direct_message'], msg => {
