@@ -36,7 +36,7 @@ slapp.message('help', ['mention', 'direct_message'], msg => {
 });
 
 slapp.message('event_count', ['direct_message'], msg => {
-    msg.say(event_count);
+    msg.say(`${event_count}`);
 })
 
 // demonstrate returning an attachment...
