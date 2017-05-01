@@ -26,6 +26,10 @@ I will respond to the following messages:
 
 var event_count = 0;
 
+const incrementEventCount = msg => {
+    event_count++;
+    // do logic for encounter here
+}
 //*********************************************
 // Setup different handlers for messages
 //*********************************************
@@ -33,10 +37,12 @@ var event_count = 0;
 // response to the user typing "help"
 slapp.message('help', ['mention', 'direct_message'], msg => {
   msg.say(HELP_TEXT);
+    incrementEventCount(msg);
 });
 
 slapp.message('event_count', ['direct_message'], msg => {
     msg.say(`${event_count}`);
+    incrementEventCount(msg);
 })
 
 // demonstrate returning an attachment...
@@ -53,11 +59,12 @@ slapp.message('attachment', ['mention', 'direct_message'], msg => {
       }
     ]
   });
+    incrementEventCount(msg);
 });
 
 // increment the message count
 slapp.message('.*', msg => {
-    event_count++;
+    incrementEventCount(msg);
 });
 
 // attach Slapp to express server
