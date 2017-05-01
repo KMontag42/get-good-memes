@@ -1,0 +1,12 @@
+#+TITLE: Get Good Memes notes
+#+AUTHOR: Kyle Montag
+#+EMAIL: thekylemontag@gmail.com
+
+* Concept
+  To create an emoji based economy for us to enjoy
+* Details
+
+* Tasks
+** TODO create memeventory
+   [2017-05-01 Mon]
+   [[file:~/workspace/get-good-memes/package.json::"prettier":%20"^1.2.2"]]
