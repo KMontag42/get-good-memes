@@ -27,6 +27,7 @@ I will respond to the following messages:
 var event_count = 0;
 
 const createEncounterMessage = text => ({
+    channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
     text: text,
     attachments: [
         {
