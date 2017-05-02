@@ -35,8 +35,8 @@ const createEncounterMessage = text => ({
             fallback: ':kyle:',
             callback_id: 'encounter_callback',
             actions: [
-                { name: 'answer', text: 'Catch', type: 'button', value: 'catch' },
-                { name: 'answer', text: 'Run',  type: 'button',  value: 'run' }
+                { name: 'answer', text: 'Catch', type: 'button', value: 'caught' },
+                { name: 'answer', text: 'Run',  type: 'button',  value: 'ran from' }
             ]
         }
     ]
@@ -44,7 +44,7 @@ const createEncounterMessage = text => ({
 
 const createEncounterCallback = () => {
     slapp.action('encounter_callback', 'answer', (msg, value) => {
-        msg.respond(msg.body.response_url, `${value} is a good choice!`)
+        msg.respond(msg.body.response_url, `You ${value} the wild :kyle:!`)
     })
 }
 // this will need prefixing so that each encounter has its own callback
