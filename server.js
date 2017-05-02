@@ -26,15 +26,36 @@ I will respond to the following messages:
 
 var event_count = 0;
 
+const createEncounterMessage = text => ({
+    text: text,
+    attachments: [
+        {
+            text: 'A wild :kyle: has appeared!',
+            fallback: ':kyle:',
+            callback_id: 'encounter_callback',
+            actions: [
+                { name: 'answer', text: 'Catch', type: 'button', value: 'catch' },
+                { name: 'answer', text: 'Run',  type: 'button',  value: 'run' }
+            ]
+        }
+    ]
+});
+
+const createEncounterCallback = () => {
+    slapp.action('encounter_callback', 'answer', (msg, value) => {
+        msg.respond(msg.body.response_url, `${value} is a good choice!`)
+    })
+}
+// this will need prefixing so that each encounter has its own callback
+// will help to prevent sonnie pls
+createEncounterCallback();
+
 const incrementEventCount = msg => {
     event_count++;
     // do logic for encounter here
     if (event_count % 5 === 0) {
         event_count = 0;
-        msg.say({
-            channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
-            text: 'ENCOUNTER'
-        });
+        msg.say(createEncounterMessage('ENCOUNTER'));
     }
 }
 //*********************************************
