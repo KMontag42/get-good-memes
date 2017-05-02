@@ -44,6 +44,9 @@ const createEncounterMessage = text => ({
 
 const createEncounterCallback = () => {
     slapp.action('encounter_callback', 'answer', (msg, value) => {
+        if (value === "caught") {
+            msg.respond(msg.body.response_url, `Congrats, ${msg.body.user.name}! You ${value} the wild :kyle:!`)
+        }
         msg.respond(msg.body.response_url, `You ${value} the wild :kyle:!`)
     })
 }
