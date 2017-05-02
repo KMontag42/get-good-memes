@@ -10,6 +10,7 @@ config:
     info: This is the name of the channel that the encounters will be sent to
     default: meme-hunting
     global: false
+    type: text
 slackscopes:
   - bot
   - commands

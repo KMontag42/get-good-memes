@@ -32,7 +32,7 @@ const incrementEventCount = msg => {
     if (event_count % 5 === 0) {
         event_count = 0;
         msg.say({
-            channel: process.env.ENCOUNTER_CHANNEL_NAME,
+            channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
             text: 'ENCOUNTER'
         });
     }
