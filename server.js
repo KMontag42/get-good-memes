@@ -49,6 +49,7 @@ const createEncounterCallback = () => {
         msg.body.response_url,
         `Congrats, ${msg.body.user.name}! You ${value} the wild :kyle:!`
       );
+        return;
     }
     msg.respond(msg.body.response_url, `You ${value} the wild :kyle:!`);
   });
