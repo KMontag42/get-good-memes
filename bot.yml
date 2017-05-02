@@ -1,4 +1,15 @@
 name: Get Good Memes
+author: Kyle Montag
+email: thekylemontag@gmail.com
 description: The coolest memes around
 avatar: .beepboop/avatar.png
 # To learn everything supported in the bot.yml file, visit https://beepboophq.com/docs/article/bot-yml
+config:
+  - name: ENCOUNTER_CHANNEL_NAME
+    friendly_name: Encounter Channel Name
+    info: This is the name of the channel that the encounters will be sent to
+    default: meme-hunting
+    global: false
+slackscopes:
+  - bot
+  - commands

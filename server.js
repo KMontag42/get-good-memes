@@ -32,7 +32,7 @@ const incrementEventCount = msg => {
     if (event_count % 5 === 0) {
         event_count = 0;
         msg.say({
-            channel: 'development',
+            channel: process.env.ENCOUNTER_CHANNEL_NAME,
             text: 'ENCOUNTER'
         });
     }
