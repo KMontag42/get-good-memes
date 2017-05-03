@@ -9,25 +9,25 @@ config:
     friendly_name: Encounter Channel Name
     info: This is the name of the channel that the encounters will be sent to
     default: meme-hunting
-    global: false
-    type: text
+    global: true
+    type: secret
   - name: FIREBASE_GGM_PROJECT_ID
     friendly_name: Firebase Project Id
     info: The project ID of your firebase instance
-    global: false
-    type: text
+    global: true
+    type: secret
   - name: FIREBASE_GGM_DB_URL
     friendly_name: Firebase DB URL
     info: The URL of your Firebase DB
-    global: false
-    type: text
+    global: true
+    type: secret
   - name: FIREBASE_GGM_STORAGE_BUCKET
     friendly_name: Firebase Store Bucket
     info: The bucket for your Firebase project
-    global: false
-    type: text
+    global: true
+    type: secret
   - name: FIREBASE_GGM_API_KEY
     friendly_name: Firebase API Key
     info: The API key for your Firebase project
-    global: false
-    type: text
+    global: true
+    type: secret
