@@ -7,6 +7,8 @@ const Context = require('slapp-context-beepboop');
 const slack = require('slack');
 const firebase = require('firebase');
 
+console.log(process.env);
+
 // initialize firebase
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_GGM_API_KEY,
