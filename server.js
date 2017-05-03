@@ -13,7 +13,7 @@ process.env.firebase = {
     storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
 };
 
-console.log(process.env.firebase);
+console.log(JSON.stringify(process.env.firebase));
 
 // initialize firebase
 const firebaseConfig = {
