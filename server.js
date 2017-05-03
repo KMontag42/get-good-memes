@@ -8,32 +8,32 @@ const slack = require('slack');
 const firebase = require('firebase');
 
 process.env.firebase = {
-    apiKey: process.env.FIREBASE_GGM_API_KEY,
-    projectId: process.env.FIREBASE_GGM_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
+  apiKey: process.env.FIREBASE_GGM_API_KEY,
+  projectId: process.env.FIREBASE_GGM_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
 };
 
 // initialize firebase
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_GGM_API_KEY,
-    authDomain: `${process.env.FIREBASE_GGM_PROJECT_ID}.firebaseapp.com`,
-    databaseURL: `https://${process.env.FIREBASE_GGM_DB_URL}.firebaseio.com`,
-    storageBucket: `${process.env.FIREBASE_GGM_STORAGE_BUCKET}.appspot.com`
+  apiKey: process.env.FIREBASE_GGM_API_KEY,
+  authDomain: `${process.env.FIREBASE_GGM_PROJECT_ID}.firebaseapp.com`,
+  databaseURL: `https://${process.env.FIREBASE_GGM_DB_URL}.firebaseio.com`,
+  storageBucket: `${process.env.FIREBASE_GGM_STORAGE_BUCKET}.appspot.com`
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// use `PORT` env var on Beep Boop - default to 3000 locally
-var port = process.env.PORT || 6000;
+// use `PORT` env let on Beep Boop - default to 3000 locally
+let port = process.env.PORT || 6000;
 
-var slapp = Slapp({
+let slapp = Slapp({
   // Beep Boop sets the SLACK_VERIFY_TOKEN env var
   verify_token: process.env.SLACK_VERIFY_TOKEN,
   convo_store: ConvoStore(),
   context: Context()
 });
 
-var HELP_TEXT = `
+let HELP_TEXT = `
 I will respond to the following messages:
 \`help\` - to see this message.
 \`hi\` - to demonstrate a conversation that tracks state.
@@ -42,7 +42,7 @@ I will respond to the following messages:
 \`attachment\` - to see a Slack attachment message.
 `;
 
-var event_count = 0;
+let event_count = 0;
 
 const getRandomEmoji = msg => {
   const appToken = msg.meta.app_token;
@@ -95,36 +95,36 @@ const createEncounterMessage = (text, msg) => {
 };
 
 const addEmojiToUser = (ref, emoji) => {
-    ref.transaction((user => {
-        if (user) {
-            if (user.memeventory && user.memeventory[emoji]) {
-                user.memeventory[emoji]++;
-            } else {
-                user.memeventory[emoji] = 1;
-            }
-        } else {
-            user = {
-                memeventory: {}
-            }
-            user.memeventory[emoji] = 1;
-        }
-        return user;
-    }));
-}
+  ref.transaction(user => {
+    if (user) {
+      if (user.memeventory && user.memeventory[emoji]) {
+        user.memeventory[emoji]++;
+      } else {
+        user.memeventory[emoji] = 1;
+      }
+    } else {
+      user = {
+        memeventory: {}
+      };
+      user.memeventory[emoji] = 1;
+    }
+    return user;
+  });
+};
 
 const createEncounterCallback = () => {
-    slapp.action('encounter_callback', 'answer', (msg, value) => {
-        const parsedValue = value.split('|');
-        const command = parsedValue[0];
-        const emoji = parsedValue[1];
-        if (command === 'caught') {
-            addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
-        }
-        msg.respond(
-            msg.body.response_url,
-            `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
-        );
-    });
+  slapp.action('encounter_callback', 'answer', (msg, value) => {
+    const parsedValue = value.split('|');
+    const command = parsedValue[0];
+    const emoji = parsedValue[1];
+    if (command === 'caught') {
+      addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
+    }
+    msg.respond(
+      msg.body.response_url,
+      `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
+    );
+  });
 };
 
 // this will need prefixing so that each encounter has its own callback
@@ -156,20 +156,27 @@ slapp.message('event_count', ['direct_message'], msg => {
 });
 
 slapp.message('memeventory', ['mention', 'direct_message'], msg => {
-    console.log(msg.body.event);
-    db.ref(`users/${msg.body.event.user}/memeventory`).once('value').then((snapshot) => {
-        const memeventory = snapshot.val();
-        console.log(memeventory);
-        const memeventoryHeader = Object.keys(memeventory).map(key => {
-            return `${key}`;
-        }).join(" ");
-        msg.say(memeventoryHeader)
-        const formattedMemes = Object.keys(memeventory).map(key => {
-            const emojiCount = memeventory[key];
-            return `  ${emojiCount}  `;
-        }).join(' ');
-        const memeventoryBody = `\`${formattedMemes}\``;
-        msg.say(memeventoryBody);
+  console.log(msg.body.event);
+  db
+    .ref(`users/${msg.body.event.user}/memeventory`)
+    .once('value')
+    .then(snapshot => {
+      const memeventory = snapshot.val();
+      console.log(memeventory);
+      const memeventoryHeader = Object.keys(memeventory)
+        .map(key => {
+          return `${key}`;
+        })
+        .join(' ');
+      msg.say(memeventoryHeader);
+      const formattedMemes = Object.keys(memeventory)
+        .map(key => {
+          const emojiCount = memeventory[key];
+          return `  ${emojiCount}  `;
+        })
+        .join('');
+      const memeventoryBody = `\`${formattedMemes}\``;
+      msg.say(memeventoryBody);
     });
 });
 
@@ -179,7 +186,7 @@ slapp.message('.*', msg => {
 });
 
 // attach Slapp to express server
-var server = slapp.attachToExpress(express());
+let server = slapp.attachToExpress(express());
 
 // start http server
 server.listen(port, err => {
