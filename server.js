@@ -13,10 +13,6 @@ process.env.firebase = {
     storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
 };
 
-console.log(process.env.firebase.apiKey);
-console.log(process.env.firebase.projectId);
-console.log(process.env.firebase.storageBucket);
-
 // initialize firebase
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_GGM_API_KEY,
@@ -117,16 +113,18 @@ const addEmojiToUser = (ref, emoji) => {
 }
 
 const createEncounterCallback = () => {
-  slapp.action('encounter_callback', 'answer', (msg, value) => {
-    const parsedValue = value.split('|');
-    const command = parsedValue[0];
-    const emoji = parsedValue[1];
-      addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
-    msg.respond(
-      msg.body.response_url,
-      `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
-    );
-  });
+    slapp.action('encounter_callback', 'answer', (msg, value) => {
+        const parsedValue = value.split('|');
+        const command = parsedValue[0];
+        const emoji = parsedValue[1];
+        if (command === 'caught') {
+            addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
+        }
+        msg.respond(
+            msg.body.response_url,
+            `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
+        );
+    });
 };
 
 // this will need prefixing so that each encounter has its own callback
