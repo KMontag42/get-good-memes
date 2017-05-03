@@ -28,46 +28,57 @@ I will respond to the following messages:
 var event_count = 0;
 
 const getRandomEmoji = (msg) => {
-    const payload = {
-        token: msg.meta.app_token
-    };
-    slack.emoji.list(payload, (err, data) => {
-        const emoji = data['emoji'];
-        const items = Object.keys(emoji);
-        const item = items[Math.floor(Math.random()*items.length)];
-        console.log(emoji[item]);
-        return item;
-    });
+    const appToken = msg.meta.app_token;
+
+    return new Promise((resolve, reject) => {
+        const payload = {
+            token: appToken
+        };
+        slack.emoji.list(payload, (err, data) => {
+            const emoji = data['emoji'];
+            const items = Object.keys(emoji);
+            const item = items[Math.floor(Math.random()*items.length)];
+            resolve([item, emoji[item]]);
+        });
+    })
 };
 
-const createEncounterMessage = text => ({
-  channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
-  text: text,
-  attachments: [
-    {
-      text: 'A wild :kyle: has appeared!',
-      fallback: ':kyle:',
-      callback_id: 'encounter_callback',
-      actions: [
-        { name: 'answer', text: 'Catch', type: 'button', value: 'caught' },
-        { name: 'answer', text: 'Run', type: 'button', value: 'ran from' }
-      ]
-    }
-  ]
-});
+const createEncounterMessage = (text, msg) => {
+    getRandomEmoji(msg).then((val) => {
+        const emojiName = val[0];
+        const emojiImage = val[1];
+        const slackMoji = `:${emojiName}:`;
+
+        msg.say({
+            channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
+            text: text,
+            attachments: [
+                {
+                    text: `A wild ${slackMoji} has appeared!`,
+                    fallback: val,
+                    callback_id: 'encounter_callback',
+                    actions: [
+                        { name: 'answer', text: 'Catch', type: 'button', value: `caught|${slackMoji}` },
+                        { name: 'answer', text: 'Run', type: 'button', value: `ran from|${slackMoji}` }
+                    ]
+                }
+            ]
+        });
+    });
+}
 
 const createEncounterCallback = () => {
-  slapp.action('encounter_callback', 'answer', (msg, value) => {
-    if (value === 'caught') {
-      msg.respond(
-        msg.body.response_url,
-        `Congrats, ${msg.body.user.name}! You ${value} the wild :kyle:!`
-      );
-      return;
-    }
-    msg.respond(msg.body.response_url, `You ${value} the wild :kyle:!`);
-  });
-};
+    slapp.action('encounter_callback', 'answer', (msg, value) => {
+        const parsedValue = value.split('|');
+        const command = parsedValue[0];
+        const emoji = parsedValue[1];
+        msg.respond(
+            msg.body.response_url,
+            `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
+        );
+    });
+}
+
 // this will need prefixing so that each encounter has its own callback
 // will help to prevent sonnie pls
 createEncounterCallback();
@@ -78,7 +89,7 @@ const incrementEventCount = msg => {
   if (event_count % 5 === 0) {
       event_count = 0;
       getRandomEmoji(msg);
-      msg.say(createEncounterMessage('ENCOUNTER'));
+      createEncounterMessage('ENCOUNTER', msg);
   }
 };
 //*********************************************
