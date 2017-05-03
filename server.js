@@ -13,7 +13,9 @@ process.env.firebase = {
     storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
 };
 
-console.log(JSON.stringify(process.env.firebase));
+console.log(process.env.firebase.apiKey);
+console.log(process.env.firebase.projectId);
+console.log(process.env.firebase.storageBucket);
 
 // initialize firebase
 const firebaseConfig = {
