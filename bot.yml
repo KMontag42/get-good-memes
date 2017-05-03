@@ -26,3 +26,8 @@ config:
     info: The bucket for your Firebase project
     global: false
     type: text
+  - name: FIREBASE_GGM_API_KEY
+    friendly_name: Firebase API Key
+    info: The API key for your Firebase project
+    global: false
+    type: text
