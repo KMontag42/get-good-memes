@@ -1,0 +1,46 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/kyle/workspace/get-good-memes/notes.org
+
+
+* DONE figure out how to do persistance for this project
+  CLOSED: [2017-05-02 Tue 23:33]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2017-05-02 Tue 23:33
+  :ARCHIVE_FILE: ~/workspace/get-good-memes/notes.org
+  :ARCHIVE_OLPATH: Tasks
+  :ARCHIVE_CATEGORY: notes
+  :ARCHIVE_TODO: DONE
+  :END:
+** firebase application linked with a token in the config
+
+* DONE create memeventory
+  CLOSED: [2017-05-02 Tue 23:33]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2017-05-02 Tue 23:33
+  :ARCHIVE_FILE: ~/workspace/get-good-memes/notes.org
+  :ARCHIVE_OLPATH: Tasks
+  :ARCHIVE_CATEGORY: notes
+  :ARCHIVE_TODO: DONE
+  :END:
+
+* DONE create interactive message callback to add the meme to the memeventory
+  CLOSED: [2017-05-02 Tue 23:33]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2017-05-02 Tue 23:33
+  :ARCHIVE_FILE: ~/workspace/get-good-memes/notes.org
+  :ARCHIVE_OLPATH: Tasks
+  :ARCHIVE_CATEGORY: notes
+  :ARCHIVE_TODO: DONE
+  :END:
+
+* DONE create slapp respond to show memeventory contents
+  CLOSED: [2017-05-02 Tue 23:33]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2017-05-02 Tue 23:33
+  :ARCHIVE_FILE: ~/workspace/get-good-memes/notes.org
+  :ARCHIVE_OLPATH: Tasks
+  :ARCHIVE_CATEGORY: notes
+  :ARCHIVE_TODO: DONE
+  :END:
