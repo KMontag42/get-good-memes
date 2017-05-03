@@ -168,7 +168,7 @@ slapp.message('memeventory', ['mention', 'direct_message'], msg => {
         msg.say(memeventoryHeader)
         const formattedMemes = Object.keys(memeventory).map(key => {
             const emojiCount = memeventory[key];
-            return `  ${emojiCount}  `).join(' ');
+            return `  ${emojiCount}  `.join(' ');
         });
         const memeventoryBody = `\`${formattedMemes}\``;
         msg.say(memeventoryBody);
