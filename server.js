@@ -4,6 +4,7 @@ const express = require('express');
 const Slapp = require('slapp');
 const ConvoStore = require('slapp-convo-beepboop');
 const Context = require('slapp-context-beepboop');
+const slack = require('slack');
 
 // use `PORT` env var on Beep Boop - default to 3000 locally
 var port = process.env.PORT || 6000;
@@ -25,6 +26,19 @@ I will respond to the following messages:
 `;
 
 var event_count = 0;
+
+const getRandomEmoji = (msg) => {
+    const payload = {
+        token: msg.meta.app_token
+    };
+    slack.emoji.list(payload, (err, data) => {
+        const emoji = data['emoji'];
+        const items = Object.keys(emoji);
+        const item = items[Math.floor(Math.random()*items.length)];
+        console.log(emoji[item]);
+        return item;
+    });
+};
 
 const createEncounterMessage = text => ({
   channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
@@ -62,8 +76,9 @@ const incrementEventCount = msg => {
   event_count++;
   // do logic for encounter here
   if (event_count % 5 === 0) {
-    event_count = 0;
-    msg.say(createEncounterMessage('ENCOUNTER'));
+      event_count = 0;
+      getRandomEmoji(msg);
+      msg.say(createEncounterMessage('ENCOUNTER'));
   }
 };
 //*********************************************

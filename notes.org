@@ -7,6 +7,15 @@
 * Details
 
 * Tasks
+** TODO create SLS configuration for the necessary backend resources
+*** dynamo table
+*** api gateway endpoints for:
+**** show meme
+**** get memeventory
+**** add to memeventory
 ** TODO create memeventory
-   [2017-05-01 Mon]
-   [[file:~/workspace/get-good-memes/package.json::"prettier":%20"^1.2.2"]]
+** TODO create interactive message callback to add the meme to the memeventory
+** TODO create slapp respond to show memeventory contents
+** TODO level up a meme by catching a second copy
+** TODO create slash command to display a meme from the memeventory based on its level
+*** the level will determine how big the image will be when displayed
