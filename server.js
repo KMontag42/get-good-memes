@@ -174,7 +174,7 @@ slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
         msg.say({
             token: msg.meta.app_token,
             channel: msg.meta.channel_id,
-            text: msg.body.user_name,
+            text: `*${msg.body.user_name}*`,
             attachments: [
                 {
                     title: '',
