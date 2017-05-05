@@ -13,5 +13,10 @@
 
 * Ideas
   - user inventory
-  - show other players stuff
-  -
+  - show other players inventory
+  - user levels and stats
+  - player shops
+  - more in depth encounters
+  - stats effect encounter rate
+  - items
+  - enhanced emoji

@@ -38,6 +38,14 @@ I will respond to the following messages:
 
 let event_count = 0;
 
+// from http://stackoverflow.com/a/34890276
+const groupBy = (xs, key) => {
+  return xs.reduce(function(rv, x) {
+    (rv[x[key]] = rv[x[key]] || []).push(x);
+    return rv;
+  }, {});
+};
+
 const getAllEmoji = msg => {
   const appToken = msg.meta.app_token || msg.resource.app_token;
 
@@ -55,10 +63,10 @@ const getAllEmoji = msg => {
 const getRandomEmoji = msg => {
   return getAllEmoji(msg).then(emoji => {
     const emojiNames = Object.keys(emoji);
-      let emojiItem = emojiNames[Math.floor(Math.random() * emojiNames.length)];
+    let emojiItem = emojiNames[Math.floor(Math.random() * emojiNames.length)];
     return {
       name: emojiItem,
-      image: emojiNames[emojiItem]
+      image: emoji[emojiItem]
     };
   });
 };
@@ -74,7 +82,7 @@ const createEncounterMessage = (text, msg) => {
       text: text,
       attachments: [
         {
-          title: `A wild ${emojiName} has appeared!~`,
+          title: `A wild ${slackMoji} has appeared!~`,
           image_url: emojiImage
         },
         {
@@ -84,9 +92,15 @@ const createEncounterMessage = (text, msg) => {
           actions: [
             {
               name: 'answer',
-              text: 'Catch',
+              text: 'Ball',
               type: 'button',
               value: `caught|${slackMoji}|${emojiImage}`
+            },
+            {
+              name: 'answer',
+              text: 'Bait',
+              type: 'button',
+              value: `bait|${slackMoji}|${emojiImage}`
             },
             {
               name: 'answer',
@@ -168,21 +182,21 @@ const incrementEventCount = msg => {
 //*********************************************
 
 slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
-    // text == :emojiName:
-    getAllEmoji(msg).then(emoji => {
-        const userEmoji = emoji[emojiName];
-        msg.say({
-            token: msg.meta.app_token,
-            text: `*${msg.body.user_name}*`,
-            attachments: [
-                {
-                    title: '',
-                    color: '#420',
-                    image_url: userEmoji
-                }
-            ]
-        });
+  // text == :emojiName:
+  getAllEmoji(msg).then(emoji => {
+    const userEmoji = emoji[emojiName];
+    msg.say({
+      token: msg.meta.app_token,
+      text: `*${msg.body.user_name}*`,
+      attachments: [
+        {
+          title: '',
+          color: '#420',
+          image_url: userEmoji
+        }
+      ]
     });
+  });
 });
 
 // response to the user typing "help"
@@ -196,7 +210,7 @@ slapp.message('event_count', ['direct_message'], msg => {
   incrementEventCount(msg);
 });
 
-slapp.message('memeventory', ['mention', 'direct_message'], msg => {
+const doMemeventory = msg => {
   db
     .ref(`users/${msg.body.event.user}/memeventory`)
     .once('value')
@@ -205,21 +219,38 @@ slapp.message('memeventory', ['mention', 'direct_message'], msg => {
       const messageFields = Object.keys(allEmoji).map(emoji => {
         return {
           title: emoji,
-          value: allEmoji[emoji],
-          short: true
+          value: allEmoji[emoji]
         };
       });
-        msg.say({
-            text: '',
+      const groupedFields = groupBy(messageFields, 'value');
+      const almostThere = Object.keys(groupedFields).map(count => {
+        const emojiNames = groupedFields[count]
+          .map(item => item.title)
+          .join(' ');
+        return {
+          title: count,
+          value: emojiNames
+        };
+      });
+      msg.say({
+        text: '',
         attachments: [
           {
-            title: 'Memeventory',
+            title: `<@${msg.body.event.user}>'s Memeventory`,
             text: 'Some user stats',
-            fields: messageFields
+            fields: almostThere
           }
         ]
       });
     });
+};
+
+slapp.message('mvty', ['mention', 'direct_message'], msg => {
+  doMemeventory(msg);
+});
+
+slapp.message('memeventory', ['mention', 'direct_message'], msg => {
+  doMemeventory(msg);
 });
 
 // increment the message count
