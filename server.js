@@ -7,12 +7,6 @@ const Context = require('slapp-context-beepboop');
 const slack = require('slack');
 const firebase = require('firebase');
 
-process.env.firebase = {
-  apiKey: process.env.FIREBASE_GGM_API_KEY,
-  projectId: process.env.FIREBASE_GGM_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_GGM_STORAGE_BUCKET
-};
-
 // initialize firebase
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_GGM_API_KEY,
@@ -44,26 +38,35 @@ I will respond to the following messages:
 
 let event_count = 0;
 
-const getRandomEmoji = msg => {
-  const appToken = msg.meta.app_token;
+const getAllEmoji = msg => {
+    const appToken = msg.meta.app_token || msg.resource.app_token;
 
-  return new Promise((resolve, reject) => {
-    const payload = {
-      token: appToken
-    };
-    slack.emoji.list(payload, (err, data) => {
-      const emoji = data['emoji'];
-      const items = Object.keys(emoji);
-      const item = items[Math.floor(Math.random() * items.length)];
-      resolve([item, emoji[item]]);
+    return new Promise((resolve, reject) => {
+        const payload = {
+            token: appToken
+        };
+        slack.emoji.list(payload, (err, data) => {
+            const emoji = data['emoji'];
+            resolve(emoji);
+        });
     });
-  });
+}
+
+const getRandomEmoji = msg => {
+    return getAllEmoji(msg).then((emoji) => {
+        const emojiNames = Object.keys(emoji);
+        let emojiItem = emojiNames[Math.floor(Math.random()*items.length)];
+        return {
+            name: emojiItem,
+            image: emojiNames[emojiItem]
+        };
+    });
 };
 
 const createEncounterMessage = (text, msg) => {
   getRandomEmoji(msg).then(val => {
-    const emojiName = val[0];
-    const emojiImage = val[1];
+    const emojiName = val.name;
+    const emojiImage = val.image;
     const slackMoji = `:${emojiName}:`;
 
     msg.say({
@@ -71,21 +74,25 @@ const createEncounterMessage = (text, msg) => {
       text: text,
       attachments: [
         {
-          text: `A wild ${slackMoji} has appeared!`,
-          fallback: val,
+          title: `A wild ${emojiName} has appeared!~`,
+          image_url: emojiImage
+        },
+        {
+          title: 'MAKE A CHOICE!',
+          fallback: 'MAKE A CHOICE!',
           callback_id: 'encounter_callback',
           actions: [
             {
               name: 'answer',
               text: 'Catch',
               type: 'button',
-              value: `caught|${slackMoji}`
+              value: `caught|${slackMoji}|${emojiImage}`
             },
             {
               name: 'answer',
               text: 'Run',
               type: 'button',
-              value: `ran from|${slackMoji}`
+              value: `ran from|${slackMoji}|${emojiImage}`
             }
           ]
         }
@@ -112,18 +119,35 @@ const addEmojiToUser = (ref, emoji) => {
   });
 };
 
+let encounterCallbackTimeout = null;
+
 const createEncounterCallback = () => {
   slapp.action('encounter_callback', 'answer', (msg, value) => {
     const parsedValue = value.split('|');
     const command = parsedValue[0];
     const emoji = parsedValue[1];
+    const emojiImage = parsedValue[2];
     if (command === 'caught') {
       addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
     }
-    msg.respond(
-      msg.body.response_url,
-      `Congrats, ${msg.body.user.name}! You ${command} the wild ${emoji}!`
-    );
+    if (!encounterCallbackTimeout) {
+      encounterCallbackTimeout = setTimeout(() => {
+        encounterCallbackTimeout = null;
+        msg.respond(msg.body.response_url, {
+          title: 'Encounter ended!',
+          attachments: [
+            {
+              title: `A wild ${emoji} has left the scene!~`,
+              image_url: emojiImage
+            },
+            {
+              title: 'Results',
+              text: 'Some shit happened'
+            }
+          ]
+        });
+      }, 5000);
+    }
   });
 };
 
@@ -136,13 +160,31 @@ const incrementEventCount = msg => {
   // do logic for encounter here
   if (event_count % 5 === 0) {
     event_count = 0;
-    getRandomEmoji(msg);
     createEncounterMessage('ENCOUNTER', msg);
   }
 };
 //*********************************************
 // Setup different handlers for messages
 //*********************************************
+
+slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
+    // text == :emojiName:
+    getAllEmoji(msg).then((emoji) => {
+        const userEmoji = emoji[emojiName];
+        msg.say({
+            token: msg.meta.app_token,
+            channel: msg.meta.channel_id,
+            text: msg.body.user_name,
+            attachments: [
+                {
+                    title: '',
+                    image_url: userEmoji
+                }
+            ]
+        });
+    });
+});
+
 
 // response to the user typing "help"
 slapp.message('help', ['mention', 'direct_message'], msg => {
@@ -156,13 +198,11 @@ slapp.message('event_count', ['direct_message'], msg => {
 });
 
 slapp.message('memeventory', ['mention', 'direct_message'], msg => {
-  console.log(msg.body.event);
   db
     .ref(`users/${msg.body.event.user}/memeventory`)
     .once('value')
     .then(snapshot => {
       const memeventory = snapshot.val();
-      console.log(memeventory);
       const memeventoryHeader = Object.keys(memeventory)
         .map(key => {
           return `${key}`;
