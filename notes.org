@@ -10,3 +10,8 @@
 ** TODO level up a meme by catching a second copy
 ** TODO create slash command to display a meme from the memeventory based on its level
 *** the level will determine how big the image will be when displayed
+
+* Ideas
+  - user inventory
+  - show other players stuff
+  -

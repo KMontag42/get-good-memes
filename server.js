@@ -39,28 +39,28 @@ I will respond to the following messages:
 let event_count = 0;
 
 const getAllEmoji = msg => {
-    const appToken = msg.meta.app_token || msg.resource.app_token;
+  const appToken = msg.meta.app_token || msg.resource.app_token;
 
-    return new Promise((resolve, reject) => {
-        const payload = {
-            token: appToken
-        };
-        slack.emoji.list(payload, (err, data) => {
-            const emoji = data['emoji'];
-            resolve(emoji);
-        });
+  return new Promise((resolve, reject) => {
+    const payload = {
+      token: appToken
+    };
+    slack.emoji.list(payload, (err, data) => {
+      const emoji = data['emoji'];
+      resolve(emoji);
     });
-}
+  });
+};
 
 const getRandomEmoji = msg => {
-    return getAllEmoji(msg).then((emoji) => {
-        const emojiNames = Object.keys(emoji);
-        let emojiItem = emojiNames[Math.floor(Math.random()*items.length)];
-        return {
-            name: emojiItem,
-            image: emojiNames[emojiItem]
-        };
-    });
+  return getAllEmoji(msg).then(emoji => {
+    const emojiNames = Object.keys(emoji);
+      let emojiItem = emojiNames[Math.floor(Math.random() * emojiNames.length)];
+    return {
+      name: emojiItem,
+      image: emojiNames[emojiItem]
+    };
+  });
 };
 
 const createEncounterMessage = (text, msg) => {
@@ -169,22 +169,21 @@ const incrementEventCount = msg => {
 
 slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
     // text == :emojiName:
-    getAllEmoji(msg).then((emoji) => {
+    getAllEmoji(msg).then(emoji => {
         const userEmoji = emoji[emojiName];
         msg.say({
             token: msg.meta.app_token,
-            channel: msg.meta.channel_id,
             text: `*${msg.body.user_name}*`,
             attachments: [
                 {
                     title: '',
+                    color: '#420',
                     image_url: userEmoji
                 }
             ]
         });
     });
 });
-
 
 // response to the user typing "help"
 slapp.message('help', ['mention', 'direct_message'], msg => {
@@ -202,21 +201,24 @@ slapp.message('memeventory', ['mention', 'direct_message'], msg => {
     .ref(`users/${msg.body.event.user}/memeventory`)
     .once('value')
     .then(snapshot => {
-      const memeventory = snapshot.val();
-      const memeventoryHeader = Object.keys(memeventory)
-        .map(key => {
-          return `${key}`;
-        })
-        .join(' ');
-      msg.say(memeventoryHeader);
-      const formattedMemes = Object.keys(memeventory)
-        .map(key => {
-          const emojiCount = memeventory[key];
-          return `  ${emojiCount}  `;
-        })
-        .join('');
-      const memeventoryBody = `\`${formattedMemes}\``;
-      msg.say(memeventoryBody);
+      const allEmoji = snapshot.val();
+      const messageFields = Object.keys(allEmoji).map(emoji => {
+        return {
+          title: emoji,
+          value: allEmoji[emoji],
+          short: true
+        };
+      });
+        msg.say({
+            text: '',
+        attachments: [
+          {
+            title: 'Memeventory',
+            text: 'Some user stats',
+            fields: messageFields
+          }
+        ]
+      });
     });
 });
 
