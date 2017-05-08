@@ -37,6 +37,7 @@ I will respond to the following messages:
 `;
 
 let event_count = 0;
+let events_needed = 5;
 
 // from http://stackoverflow.com/a/34890276
 const groupBy = (xs, key) => {
@@ -172,8 +173,9 @@ createEncounterCallback();
 const incrementEventCount = msg => {
   event_count++;
   // do logic for encounter here
-  if (event_count % 5 === 0) {
-    event_count = 0;
+  if (event_count % events_needed === 0) {
+      event_count = 0;
+      events_needed = Math.floor(Math.random() * 20);
     createEncounterMessage('ENCOUNTER', msg);
   }
 };
