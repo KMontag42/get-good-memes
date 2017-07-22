@@ -1,11 +1,15 @@
-'use strict';
+"use strict";
 
-const express = require('express');
-const Slapp = require('slapp');
-const ConvoStore = require('slapp-convo-beepboop');
-const Context = require('slapp-context-beepboop');
-const slack = require('slack');
-const firebase = require('firebase');
+const express = require("express");
+const Slapp = require("slapp");
+const ConvoStore = require("slapp-convo-beepboop");
+const Context = require("slapp-context-beepboop");
+const slack = require("slack");
+const firebase = require("firebase");
+const ApolloClient = require("apollo-client");
+const createNetworkInterface = ApolloClient.createNetworkInterface;
+const gql = require("graphql-tag");
+require("isomorphic-fetch");
 
 // initialize firebase
 const firebaseConfig = {
@@ -16,6 +20,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+const graphQlClient = new ApolloClient.default({
+  networkInterface: createNetworkInterface({
+    uri: "https://api.graph.cool/simple/v1/cj5fs37ezouzf0122zdjdwtld"
+  })
+});
 
 // use `PORT` env let on Beep Boop - default to 3000 locally
 let port = process.env.PORT || 6000;
@@ -54,7 +64,7 @@ const getAllEmoji = msg => {
       token: appToken
     };
     slack.emoji.list(payload, (err, data) => {
-      const emoji = data['emoji'];
+      const emoji = data["emoji"];
       resolve(emoji);
     });
   });
@@ -78,34 +88,34 @@ const createEncounterMessage = (text, msg) => {
     const slackMoji = `:${emojiName}:`;
 
     msg.say({
-      channel: process.env.ENCOUNTER_CHANNEL_NAME || 'meme-hunting',
+      channel: process.env.ENCOUNTER_CHANNEL_NAME || "meme-hunting",
       text: text,
       attachments: [
         {
           title: `A wild ${slackMoji} has appeared!~`,
-          image_url: emojiImage
+          image_url: "https://3ecff068.ngrok.io/emoji/big?emoji=https://emoji.slack-edge.com/T0F9ZHNAY/tandy/0992447a01f5d5bd.png" //emojiImage
         },
         {
-          title: 'MAKE A CHOICE!',
-          fallback: 'MAKE A CHOICE!',
-          callback_id: 'encounter_callback',
+          title: "MAKE A CHOICE!",
+          fallback: "MAKE A CHOICE!",
+          callback_id: "encounter_callback",
           actions: [
             {
-              name: 'answer',
-              text: 'Ball',
-              type: 'button',
+              name: "answer",
+              text: "Ball",
+              type: "button",
               value: `caught|${slackMoji}|${emojiImage}`
             },
             {
-              name: 'answer',
-              text: 'Bait',
-              type: 'button',
+              name: "answer",
+              text: "Bait",
+              type: "button",
               value: `bait|${slackMoji}|${emojiImage}`
             },
             {
-              name: 'answer',
-              text: 'Run',
-              type: 'button',
+              name: "answer",
+              text: "Run",
+              type: "button",
               value: `ran from|${slackMoji}|${emojiImage}`
             }
           ]
@@ -136,27 +146,27 @@ const addEmojiToUser = (ref, emoji) => {
 let encounterCallbackTimeout = null;
 
 const createEncounterCallback = () => {
-  slapp.action('encounter_callback', 'answer', (msg, value) => {
-    const parsedValue = value.split('|');
+  slapp.action("encounter_callback", "answer", (msg, value) => {
+    const parsedValue = value.split("|");
     const command = parsedValue[0];
     const emoji = parsedValue[1];
     const emojiImage = parsedValue[2];
-    if (command === 'caught') {
+    if (command === "caught") {
       addEmojiToUser(db.ref(`users/${msg.body.user.id}`), emoji);
     }
     if (!encounterCallbackTimeout) {
       encounterCallbackTimeout = setTimeout(() => {
         encounterCallbackTimeout = null;
         msg.respond(msg.body.response_url, {
-          title: 'Encounter ended!',
+          title: "Encounter ended!",
           attachments: [
             {
               title: `A wild ${emoji} has left the scene!~`,
               image_url: emojiImage
             },
             {
-              title: 'Results',
-              text: 'Some shit happened'
+              title: "Results",
+              text: "Some shit happened"
             }
           ]
         });
@@ -174,14 +184,14 @@ const incrementEventCount = msg => {
   // do logic for encounter here
   if (event_count % 5 === 0) {
     event_count = 0;
-    createEncounterMessage('ENCOUNTER', msg);
+    createEncounterMessage("ENCOUNTER", msg);
   }
 };
 //*********************************************
 // Setup different handlers for messages
 //*********************************************
 
-slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
+slapp.command("/big", "\:(.*)\:", (msg, text, emojiName) => {
   // text == :emojiName:
   getAllEmoji(msg).then(emoji => {
     const userEmoji = emoji[emojiName];
@@ -190,8 +200,8 @@ slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
       text: `*${msg.body.user_name}*`,
       attachments: [
         {
-          title: '',
-          color: '#420',
+          title: "",
+          color: "#420",
           image_url: userEmoji
         }
       ]
@@ -200,61 +210,100 @@ slapp.command('/big', '\:(.*)\:', (msg, text, emojiName) => {
 });
 
 // response to the user typing "help"
-slapp.message('help', ['mention', 'direct_message'], msg => {
+slapp.message("help", ["mention", "direct_message"], msg => {
   msg.say(HELP_TEXT);
   incrementEventCount(msg);
 });
 
-slapp.message('event_count', ['direct_message'], msg => {
+slapp.message("event_count", ["direct_message"], msg => {
   msg.say(`${event_count}`);
   incrementEventCount(msg);
 });
 
 const doMemeventory = msg => {
-  db
-    .ref(`users/${msg.body.event.user}/memeventory`)
-    .once('value')
-    .then(snapshot => {
-      const allEmoji = snapshot.val();
-      const messageFields = Object.keys(allEmoji).map(emoji => {
-        return {
-          title: emoji,
-          value: allEmoji[emoji]
-        };
-      });
-      const groupedFields = groupBy(messageFields, 'value');
-      const almostThere = Object.keys(groupedFields).map(count => {
-        const emojiNames = groupedFields[count]
-          .map(item => item.title)
-          .join(' ');
-        return {
-          title: count,
-          value: emojiNames
-        };
-      });
-      msg.say({
-        text: '',
-        attachments: [
-          {
-            title: `<@${msg.body.event.user}>'s Memeventory`,
-            text: 'Some user stats',
-            fields: almostThere
-          }
-        ]
-      });
+  db.ref(`users/${msg.body.event.user}/memeventory`).once("value").then(snapshot => {
+    const allEmoji = snapshot.val();
+    const messageFields = Object.keys(allEmoji).map(emoji => {
+      return {
+        title: emoji,
+        value: allEmoji[emoji]
+      };
     });
+    const groupedFields = groupBy(messageFields, "value");
+    const almostThere = Object.keys(groupedFields).map(count => {
+      const emojiNames = groupedFields[count].map(item => item.title).join(" ");
+      return {
+        title: count,
+        value: emojiNames
+      };
+    });
+    msg.say({
+      text: "",
+      attachments: [
+        {
+          title: `<@${msg.body.event.user}>'s Memeventory`,
+          text: "Some user stats",
+          fields: almostThere
+        }
+      ]
+    });
+  });
 };
 
-slapp.message('mvty', ['mention', 'direct_message'], msg => {
+slapp.message("mvty", ["mention", "direct_message"], msg => {
   doMemeventory(msg);
 });
 
-slapp.message('memeventory', ['mention', 'direct_message'], msg => {
+slapp.message("memeventory", ["mention", "direct_message"], msg => {
   doMemeventory(msg);
+});
+
+const getIframelyJson = url => {
+  const embedUrl = encodeURI(url);
+  return fetch(
+    `https://iframe.ly/api/oembed?url=${embedUrl}&api_key=5058ec66a3902c12a5c768&omit_script=true&omit_css=true&html5=1`
+  ).then(x => x.json());
+};
+
+slapp.message("(https?:\/\/.*)", (msg, text, url) => {
+  getIframelyJson(url).then(iframely => {
+    msg._slapp.client.users.info(
+      { token: msg.meta.bot_token, user: msg.body.event.user },
+      (err, data) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const user = data.user.name;
+        // do some shit with graphQL and iFramely
+        const mutationString = gql`
+          mutation addLink($url: String!, $user: String!, $iframely: Json!){
+            createLink(url:$url, user:$user, iframely:$iframely) {
+              id
+              url
+              user
+              iframely
+            }
+          }`;
+        graphQlClient
+          .mutate({
+            mutation: mutationString,
+            variables: {
+              url,
+              user,
+              iframely
+            }
+          })
+          .then(x => console.log(x))
+          .catch(x => console.log("error", x));
+      }
+    );
+  });
 });
 
 // increment the message count
-slapp.message('.*', msg => {
+slapp.message(".*", msg => {
+  console.log("catch all");
   incrementEventCount(msg);
 });
 

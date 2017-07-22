@@ -20,3 +20,4 @@
   - stats effect encounter rate
   - items
   - enhanced emoji
+* TODO MOVE BIGMOJI TO ITS OWN SLACK APP AND DISTRIBUTE IT!
