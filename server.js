@@ -267,18 +267,20 @@ const getIframelyJson = url => {
   ).then(x => x.json());
 };
 
-slapp.message("(https?:\/\/.*)", (msg, text, url) => {
-  getIframelyJson(url).then(iframely => {
-    msg._slapp.client.users.info(
-      { token: msg.meta.bot_token, user: msg.body.event.user },
-      (err, data) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        const user = data.user.name;
-        // do some shit with graphQL and iFramely
-        const mutationString = gql`
+slapp.message(
+  "(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})",
+  (msg, text, url) => {
+    getIframelyJson(url).then(iframely => {
+      msg._slapp.client.users.info(
+        { token: msg.meta.bot_token, user: msg.body.event.user },
+        (err, data) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          const user = data.user.name;
+          // do some shit with graphQL and iFramely
+          const mutationString = gql`
           mutation addLink($url: String!, $user: String!, $iframely: Json!){
             createLink(url:$url, user:$user, iframely:$iframely) {
               id
@@ -287,21 +289,22 @@ slapp.message("(https?:\/\/.*)", (msg, text, url) => {
               iframely
             }
           }`;
-        graphQlClient
-          .mutate({
-            mutation: mutationString,
-            variables: {
-              url,
-              user,
-              iframely
-            }
-          })
-          .then(x => console.log(x))
-          .catch(x => console.log("error", x));
-      }
-    );
-  });
-});
+          graphQlClient
+            .mutate({
+              mutation: mutationString,
+              variables: {
+                url,
+                user,
+                iframely
+              }
+            })
+            .then(x => console.log(x))
+            .catch(x => console.log("error", x));
+        }
+      );
+    });
+  }
+);
 
 // increment the message count
 slapp.message(".*", msg => {
