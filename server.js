@@ -268,8 +268,10 @@ const getIframelyJson = url => {
 };
 
 slapp.message(
-  "(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})",
+  "(([a-z]+\:\/+)([^\/\s]*)([a-z0-9\-@\^=%&;\/~\+]*)[\?]?([^ \#]*)#?([^ \#]*))",
   (msg, text, url) => {
+    console.log(url);
+    console.log(text);
     getIframelyJson(url).then(iframely => {
       msg._slapp.client.users.info(
         { token: msg.meta.bot_token, user: msg.body.event.user },
